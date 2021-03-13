@@ -184,10 +184,16 @@ var myObject = {
         function callback() {
             console.log('this', this)
         }
-        this.fooBar.fooBarMethod(callback);
-        this.fooBar.fooBarMethod.call({newThis: "newThis"}, callback)
-        this.fooBar.fooBarPrototypeMethod(callback);
-        this.fooBar.fooBarPrototypeMethod.call({newThis: "newThis"}, callback)
+        // Expected: callback function's this to be bound to myObject.fooBar
+        // Actual: callback function's this was bound to Window
+        this.fooBar.fooBarMethod(callback); 
+        this.fooBar.fooBarPrototypeMethod(callback); 
+
+        // Expected: callback function's this to be bound to {newThis: "newThis"}
+        // Actual: callback function's this was bound to Window
+        this.fooBar.fooBarPrototypeMethod.call({newThis: "newThis"}, callback);
+        this.fooBar.fooBarMethod.call({newThis: "newThis"}, callback);
+        
     }
 }
 
