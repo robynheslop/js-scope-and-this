@@ -168,47 +168,55 @@ console.log(this.favouriteThings) //Logs: ["JavaScript", "Linux", "Pastries"]
 
 #### Lexical binding of `this`
 
+How do we work out what `this` is bound to?
+
+![What is `this` bound to?](./assets/this.png);
+
 ```javascript
-function FooBar () {
-    this.fooBarMethod = function(callback) {
-        callback();
-    }
+function giveMeAFunctionToCall(functionToCall){
+    functionToCall();
 }
-FooBar.prototype.fooBarPrototypeMethod = function(callback) {
-    callback();
-}
-
 var myObject = {
-    fooBar: new FooBar(),
-    myObjectMethod: function() {
-        function callback() {
-            console.log('this', this)
+    giveMeAClassicalFunction: function(){
+        var myClassicalFunction = function() {
+            console.log('classicalFunction: this === myObject?', this===myObject)
+            console.log('classicalFunction: this === window?', this===window)
         }
-        // Expected: callback function's this to be bound to myObject.fooBar
-        // Actual: callback function's this was bound to Window
-        this.fooBar.fooBarMethod(callback); 
-        this.fooBar.fooBarPrototypeMethod(callback); 
-
-        // Expected: callback function's this to be bound to {newThis: "newThis"}
-        // Actual: callback function's this was bound to Window
-        this.fooBar.fooBarPrototypeMethod.call({newThis: "newThis"}, callback);
-        this.fooBar.fooBarMethod.call({newThis: "newThis"}, callback);
-        
+        return myClassicalFunction;
     }
 }
 
-myObject.myObjectMethod();
+var myClassicalFunction = myObject.giveMeAClassicalFunction();
+giveMeAFunctionToCall(myClassicalFunction);
+```
+
+```javascript
+function giveMeAFunctionToCall(functionToCall){
+    functionToCall();
+}
+var myObject = {
+    giveMeAnArrowFunction: function(){
+        var myArrowFunction = () => {
+            console.log('arrowFunction: this === myObject?', this===myObject)
+            console.log('arrowFunction: this === window?', this===window)
+        };
+        return myArrowFunction2;
+    },
+}
+
+var myArrowFunction = myObject.giveMeAnArrowFunction();
+giveMeAFunctionToCall(myArrowFunction);
 ```
 
 ### `this` resources
 
-[Global object- MDN](https://developer.mozilla.org/en-US/docs/Glossary/Global_object)
-[`this` keyword - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this)
-[`new` operator - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new)
-[`this` keyword - ui.dev](https://ui.dev/this-keyword-call-apply-bind-javascript/)
+- [Global object - MDN](https://developer.mozilla.org/en-US/docs/Glossary/Global_object)
+- [`this` keyword - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this)
+- [`new` operator - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new)
+- [`this` keyword - ui.dev](https://ui.dev/this-keyword-call-apply-bind-javascript/)
 
 ## Understanding scope
 
 ### Scope resources
 
-[ui-dev](https://ui.dev/ultimate-guide-to-execution-contexts-hoisting-scopes-and-closures-in-javascript/)
+- [scope - ui-dev](https://ui.dev/ultimate-guide-to-execution-contexts-hoisting-scopes-and-closures-in-javascript/)
