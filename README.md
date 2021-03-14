@@ -132,7 +132,6 @@ const user2 = {
     age: 19
 }
 
-
 function greetMe() {
     console.log(`Hello my name is ${this.name} and I am ${this.age} years old`);
 }
@@ -167,10 +166,6 @@ console.log(this.favouriteThings) //Logs: ["JavaScript", "Linux", "Pastries"]
 ```
 
 #### Lexical binding of `this`
-
-How do we work out what `this` is bound to?
-
-![What is `this` bound to?](./assets/this.png);
 
 ```javascript
 function giveMeAFunctionToCall(functionToCall){
@@ -208,15 +203,227 @@ var myArrowFunction = myObject.giveMeAnArrowFunction();
 giveMeAFunctionToCall(myArrowFunction);
 ```
 
+### How do we work out what `this` is bound to?
+
+![What is `this` bound to?](./assets/this.png);
+
 ### `this` resources
 
 - [Global object - MDN](https://developer.mozilla.org/en-US/docs/Glossary/Global_object)
-- [`this` keyword - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this)
+- [`this` operator - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this)
 - [`new` operator - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new)
-- [`this` keyword - ui.dev](https://ui.dev/this-keyword-call-apply-bind-javascript/)
+- [Understanding the `this` keyword, call, apply, and bind in JavaScript - ui.dev](https://ui.dev/this-keyword-call-apply-bind-javascript/)
 
 ## Understanding scope
 
+To understand scope, we need to understand how the Javascript interpreter executes our code. 
+
+Our code is broken up into logical blocks called `Execution Contexts`. 
+
+An `Execution Context` is created in one of two scenarios:
+
+1. Javascript Intpreter begins executing a program: `Global Execution Context`
+2. Whenever a function in invoked `Function Execution Context`
+
+An `Execution Context` has two phases:
+
+1. Creation
+2. Execution
+
+The first `Execution Context` created is called the `Global Execution Context`.
+
+### Global Execution Context
+
+What happens during the Global _Creation_ phase? 
+
+1. Create a global object
+2. Create a `this` object
+3. Allocate memory for variables and functions
+4. Assign variable declarations a default value of `undefined`
+5. Load functions into memory
+
+What happens during the Global _Exection_ phase? 
+
+Code is loaded line by line and executed. This is when values are assigned to the variables declared during the _creation_ phase.
+
+The process of assigning variable declarations a default value of `undefined` during the _creation_ phase is referred to as **Hoisting**.
+
+#### [Empty program](https://ui.dev/javascript-visualizer?code=%2F%2FThis%20is%20an%20empty%20file%21)
+
+```javascript
+// This is an empty file
+```
+
+#### [A variable and a function](https://ui.dev/javascript-visualizer?code=var%20greeting%20%3D%20%22hi%22%3B%0Afunction%20iDontDoMuch%28%29%7B%0A%09%0A%7D)
+
+
+```javascript
+var  greeting = "hi";
+function iDontDoMuch() {
+
+}
+```
+
+#### [Hoisting](https://ui.dev/javascript-visualizer?code=alert%28greeting%29%3B%0Avar%20greeting%20%3D%20"hi"%3B%0Aalert%28greeting%29%3B)
+
+```javascript
+alert(greeting);
+var  greeting = "hi";
+alert(greeting);
+```
+
+### Function Execution Context
+
+What happens during the Function _Creation_ phase? 
+
+1. ~~Create a global object~~ Creates an `arguments` array
+2. Create a `this` object
+3. Allocate memory for variables and functions
+4. Assign variable declarations a default value of `undefined`
+5. Load functions into memory
+
+What happens during the Function _Exection_ phase? 
+
+Code is loaded line by line and executed. This is when values are assigned to the variables declared during the _creation_ phase.
+
+#### [Empty function with 0 arguments](https://ui.dev/javascript-visualizer?code=function%20fooBar%28%29%7B%0A%20%0A%7D%0AfooBar%28%29%3B)
+
+```javascript
+function fooBar() {
+    
+}
+fooBar();
+```
+
+#### [Empty function with several arguments](https://ui.dev/javascript-visualizer?code=function%20fooTwo%28fruit1%2Cfruit2%29%20%7B%0A%20%20%20%20alert%28fruit1%29%3B%0A%20%20%20%20alert%28fruit2%29%3B%0A%7D%0AfooTwo%28"apple"%2C"orange"%29%3B)
+
+```javascript
+function fooTwo(fruit1,fruit2) {
+    alert(fruit1);
+    alert(fruit2);
+}
+fooTwo("apple","orange");
+```
+
+#### [Execution Stack](https://ui.dev/javascript-visualizer?code=function%20one%28%29%20%7B%0A%20%20%20%20function%20two%28%29%20%7B%0A%20%20%20%20%20%20%20%20function%20three%28%29%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20three%28%29%3B%0A%20%20%20%20%7D%0A%20%20%20%20two%28%29%3B%0A%7D%0Aone%28%29%3B)
+
+```javascript
+function one() {
+    function two() {
+        function three() {
+            
+        }
+        three();
+    }
+    two();
+}
+one();
+```
+
+#### [Scope Chain - Local Scope](https://ui.dev/javascript-visualizer?code=function%20step1%28%29%7B%0A%20%20var%20lyrics%20%3D%20"We%20can%20have%20so%20much%20fun..."%3B%0A%20%20console.log%28lyrics%29%3B%0A%7D%0A%0Afunction%20step2%28%29%7B%0A%20%20var%20lyrics%20%3D%20"There%27s%20so%20much%20we%20can%20do."%3B%0A%20%20console.log%28lyrics%29%3B%0A%7D%0A%0Afunction%20step3%28%29%7B%0A%20%20var%20lyrics%20%3D%20"It%27s%20just%20you%20and%20meeeeeeee%21"%3B%0A%20%20console.log%28lyrics%29%3B%0A%7D%0A%0Aconsole.log%28lyrics%29%3B%0Avar%20lyrics%20%3D%20"I%20can%20give%20you%20more"%3B%0Astep1%28%29%3B%0Astep2%28%29%3B%0Astep3%28%29%3B%0Aconsole.log%28lyrics%29%3B)
+
+```javascript
+function step1() {
+    var lyrics = "We can have so much fun...";
+    console.log(lyrics);
+}
+function step2() {
+    var lyrics = "There's so much we can do";
+    console.log(lyrics);
+}
+function step3() {
+    var lyrics = "It's just you and meeeeeee!";
+    console.log(lyrics);
+}
+console.log(lyrics);
+var lyrics = "I can give you more";
+step1();
+step2();
+step3();
+console.log(lyrics);
+```
+
+
+#### [Scope Chain - Outer Scope](https://ui.dev/javascript-visualizer?code=var%20theFairestOfFair%20%3D%20"Meghan%20Markle"%3B%0A%0Afunction%20whoIsTheFairestOfThemAll%28%29%7B%0A%20%20alert%28theFairestOfFair%29%3B%0A%7D%0A%0AwhoIsTheFairestOfThemAll%28%29%3B)
+
+```javascript
+var theFairestOfFair = "Meghan Markle"
+function whoIsTheFairestOfThemAll() {
+    alert(theFairestOfFair);
+}
+whoIsTheFairestOfThemAll();
+```
+
+#### [Scope Chain - Local and Outer Scope](https://ui.dev/javascript-visualizer?code=var%20a%20%3D%20"a"%3B%0Afunction%20one%28%29%20%7B%0A%20%20%20%20var%20b%20%3D%20"b"%3B%0A%20%20%20%20console.log%28"a%20in%20one%28%29%27s%20function%20execution%20context"%29%3B%0A%20%20%20%20console.log%28a%29%3B%0A%20%20%20%20console.log%28"b%20in%20one%28%29%27s%20function%20execution%20context"%29%3B%0A%20%20%20%20console.log%28b%29%3B%0A%7D%0Aone%28%29%3B%0A%0Aconsole.log%28"a%20in%20global%20execution%20context"%29%3B%0Aconsole.log%28a%29%3B%0Aconsole.log%28"b%20in%20global%20execution%20context"%29%3B%0Aconsole.log%28b%29%3B)
+
+```javascript
+var a = "a";
+function one() {
+    var b = "b";
+    console.log("a in one()'s function execution context");
+    console.log(a);
+    console.log("b in one()'s function execution context");
+    console.log(b);
+}
+one();
+
+console.log("a in global execution context");
+console.log(a);
+console.log("b in global execution context");
+console.log(b);
+```
+
+#### [Scope Chain - Closure Scope](https://ui.dev/javascript-visualizer?code=function%20meghanMarkle%28%29%7B%0A%09var%20meghansSecret%20%3D%20"I%20see%20dead%20people."%3B%0A%20%20%09return%20function%20princeHarry%28%29%7B%0A%20%20%20%20%09console.log%28"Meghan%20told%20me%20a%20secret.%20She%20said%3A%20"%29%3B%0A%20%20%20%20%20%20%09console.log%28meghansSecret%29%3B%0A%20%20%20%20%7D%3B%0A%7D%0A%0Avar%20princeHarryClosure%20%3D%20meghanMarkle%28%29%3B%0AprinceHarryClosure%28%29%3B)
+
+```javascript
+function meghanMarkle() {
+    var meghansSecret = "I see dead people.";
+    return function princeHarry() {
+        console.log("Meghan told me a secret. She said: ") ;
+        console.log(meghansSecret); 
+    }
+}
+var princeHarryClosure = meghanMarkle();
+princeHarryClosure();
+```
+
+#### Closure scope & `this` 
+
+##### Classical Functions
+
+```javascript
+var meghansSecret = "I eat Archie's baby food.";
+console.log(meghansSecret);
+function meghanMarkle(){
+	var meghansSecret = "I see dead people.";
+  	return function princeHarry(){
+    	console.log("Meghan told me a secret. She said: ");
+      	console.log(this.meghansSecret);
+    };
+}
+
+var princeHarryClosure = meghanMarkle();
+princeHarryClosure();
+```
+
+##### Arrow functions `()=>{}`
+
+```javascript
+var meghansSecret = "I eat Archie's baby food.";
+console.log(meghansSecret);
+function meghanMarkle(){
+	var meghansSecret = "I see dead people.";
+  	return ()=>{
+    	console.log("Meghan told me a secret. She said: ");
+      	console.log(this.meghansSecret);
+    };
+}
+
+var princeHarryClosure = meghanMarkle.call({meghansSecret});
+princeHarryClosure();
+```
+
 ### Scope resources
 
-- [scope - ui-dev](https://ui.dev/ultimate-guide-to-execution-contexts-hoisting-scopes-and-closures-in-javascript/)
+- [JavaScript Visualiser - ui.dev](https://ui.dev/javascript-visualizer/)
+- [Ultimate Guide to Execution Contexts, Hoisting, Scopes and Closures in JavaScript - ui-dev](https://ui.dev/ultimate-guide-to-execution-contexts-hoisting-scopes-and-closures-in-javascript/)
